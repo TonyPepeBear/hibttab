@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hibttab/data/cubit/airport_list_cubit.dart';
+import 'package:hibttab/view/search_page.dart';
+import 'package:hibttab/view/settings_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -7,15 +11,18 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'HIBTTA',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: MultiBlocProvider(providers: [
+        BlocProvider<AirportsListCubit>(
+          create: (context) => AirportsListCubit(),
+        )
+      ], child: const MyHomePage(title: 'Have I been to this airport?')),
     );
   }
 }
@@ -30,13 +37,10 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  int pageIndex = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
-  }
+  late Widget searchPage = const SearchPage();
+  late Widget settingsPage = const SettingsPage();
 
   @override
   Widget build(BuildContext context) {
@@ -44,24 +48,37 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headline4,
-            ),
-          ],
-        ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: pageIndex,
+        onTap: (value) {
+          setState(() {
+            pageIndex = value;
+          });
+        },
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(label: "Map", icon: Icon(Icons.public)),
+          BottomNavigationBarItem(
+              label: "Search", icon: Icon(Icons.travel_explore)),
+          BottomNavigationBarItem(label: "History", icon: Icon(Icons.history)),
+          BottomNavigationBarItem(
+              label: "Settings", icon: Icon(Icons.settings)),
+        ],
+      ),
+      body: IndexedStack(
+        index: pageIndex,
+        children: const [
+          Text("0"),
+          SearchPage(),
+          Text("2"),
+          SettingsPage(),
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.update),
+        onPressed: () {
+          context.read<AirportsListCubit>().updateList();
+        },
       ),
     );
   }

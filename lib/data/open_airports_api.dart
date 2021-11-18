@@ -1,6 +1,7 @@
 import 'package:csv/csv.dart';
 import 'package:csv/csv_settings_autodetection.dart';
 import 'package:http/http.dart' as http;
+
 import 'airport_model.dart';
 
 late Uri airportURL = Uri.parse(
@@ -28,6 +29,11 @@ Future<List<AirportModel>> convertCsvPlainText2List(String csv) async {
       e[9].toString(),
       e[15].toString(),
       e[16].toString()))).toList();
+}
+
+Future<List<AirportModel>> getAllAirportListFromApi() async {
+  return await convertCsvPlainText2List(
+      await getAirportsCsvPlainText(http.Client()));
 }
 
 void main() async {
